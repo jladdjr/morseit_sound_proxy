@@ -13,14 +13,19 @@ import time
 
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
 from selenium.webdriver import ActionChains
 
 driver = webdriver.Chrome()
-driver.get("http://morsecode.me/?room=1")
-elem = driver.find_element_by_id('key')
+driver.get("http://www.web-adventures.org/MorseBlitz/")
 
-key_down = ActionChains(driver).key_down(Keys.SPACE)
-key_up = ActionChains(driver).key_up(Keys.SPACE)
+select = Select(driver.find_element_by_id('wpm'))
+select.select_by_visible_text('15 wpm')
+
+transmit_button = driver.find_element_by_xpath("//button[contains(., 'Transmit')]")
+transmit_button.click()
+
+body = driver.find_element_by_xpath('//body')
 
 usage_line = ' press <enter> to quit, +<enter> or -<enter> to change scaling '
 
@@ -99,13 +104,12 @@ try:
             if any([np.clip(x, 0, 1) > 0.25 for x in magnitude[low_bin:low_bin + args.columns]]):
                 if not making_sound:
                     making_sound = True
-                    #key_down.perform()
-                    ActionChains(driver).move_to_element(elem).click_and_hold().perform()
+                    ActionChains(driver).move_to_element(body).click_and_hold().perform()
                     print('KEY DOWN')
             else:
                 if making_sound:
                     making_sound = False
-                    ActionChains(driver).move_to_element(elem).release().perform()
+                    ActionChains(driver).move_to_element(body).release().perform()
                     print('KEY UP\n')
         else:
             print('no input')
