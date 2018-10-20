@@ -9,8 +9,22 @@ import math
 import numpy as np
 import shutil
 
+import time
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver import ActionChains
+
+driver = webdriver.Chrome()
+driver.get("http://morsecode.me/?room=1")
+elem = driver.find_element_by_id('key')
+
+key_down = ActionChains(driver).key_down(Keys.SPACE)
+key_up = ActionChains(driver).key_up(Keys.SPACE)
+
 usage_line = ' press <enter> to quit, +<enter> or -<enter> to change scaling '
 
+making_sound = False
 
 def int_or_str(text):
     """Helper function for argument parsing."""
@@ -80,7 +94,19 @@ try:
             magnitude *= args.gain / fftsize
             line = (gradient[int(np.clip(x, 0, 1) * (len(gradient) - 1))]
                     for x in magnitude[low_bin:low_bin + args.columns])
-            print(*line, sep='', end='\x1b[0m\n')
+            #print(*line, sep='', end='\x1b[0m\n')
+            global making_sound
+            if any([np.clip(x, 0, 1) > 0.25 for x in magnitude[low_bin:low_bin + args.columns]]):
+                if not making_sound:
+                    making_sound = True
+                    #key_down.perform()
+                    ActionChains(driver).move_to_element(elem).click_and_hold().perform()
+                    print('KEY DOWN')
+            else:
+                if making_sound:
+                    making_sound = False
+                    ActionChains(driver).move_to_element(elem).release().perform()
+                    print('KEY UP\n')
         else:
             print('no input')
 
